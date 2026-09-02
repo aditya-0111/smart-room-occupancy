@@ -76,3 +76,19 @@ def predict_occupancy(data: SensorData):
         "prediction": int(prediction),
         "confidence": confidence
     }
+@app.get("/sensor-data")
+def get_sensor_data():
+
+    cursor = db.cursor(dictionary=True)
+
+    query = """
+        SELECT *
+        FROM sensor_data
+        ORDER BY created_at DESC
+    """
+
+    cursor.execute(query)
+    data = cursor.fetchall()
+    cursor.close()
+
+    return data
