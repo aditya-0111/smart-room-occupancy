@@ -4,7 +4,8 @@ import "./App.css"
 function App() {
   const [sensorData, setSensorData] = useState(null)
 
-  useEffect(() => {
+ useEffect(() => {
+  const fetchSensorData = () => {
     fetch("http://127.0.0.1:8000/sensor-data")
       .then((response) => response.json())
       .then((data) => {
@@ -13,7 +14,14 @@ function App() {
       .catch((error) => {
         console.error("Error fetching sensor data:", error)
       })
-  }, [])
+  }
+
+  fetchSensorData()
+
+  const interval = setInterval(fetchSensorData, 5000)
+
+  return () => clearInterval(interval)
+}, [])
 
   if (!sensorData) {
     return <h1>Loading sensor data...</h1>
