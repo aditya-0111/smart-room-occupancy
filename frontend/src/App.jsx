@@ -24,17 +24,31 @@ function App() {
 
       <div>
         <h2>Room Status</h2>
+
         <p>
-          Occupancy:{" "}
+          🟢 Occupancy:{" "}
           {sensorData.occupancy === 1 ? "Occupied" : "Empty"}
         </p>
-        <p>Temperature: {sensorData.temperature} °C</p>
-        <p>Humidity: {sensorData.humidity} %</p>
-        <p>Light: {sensorData.light}</p>
+
+        <p>🌡️ Temperature: {sensorData.temperature} °C</p>
+
+        <p>💧 Humidity: {sensorData.humidity} %</p>
+
+        <p>💡 Light Level: {sensorData.light}</p>
+
         <p>
-          Motion: {sensorData.pir_motion === 1 ? "Detected" : "Not Detected"}
+          🚶 Motion:{" "}
+          {sensorData.pir_motion === 1
+            ? "Detected"
+            : "Not Detected"}
         </p>
-        <p>Confidence: {sensorData.confidence * 100} %</p>
+
+        <p>
+          🎯 ML Confidence:{" "}
+          {sensorData.confidence * 100} %
+        </p>
+
+        <p>🕐 Last Updated: {sensorData.created_at}</p>
       </div>
     </div>
   )
