@@ -1,4 +1,14 @@
 import { useEffect, useState } from "react"
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts"
 import "./App.css"
 
 function App() {
@@ -118,9 +128,77 @@ return (
     <div className="last-updated">
       🕐 Last Updated: {sensorData.created_at}
     </div>
-    <div className="history-section">
-  <h2>📊 Sensor History</h2>
+   
+  <div className="chart-section">
+  <h2>🌡️ Temperature History</h2>
 
+  <ResponsiveContainer width="100%" height={300}>
+    <LineChart data={historyData}>
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis dataKey="created_at" />
+      <YAxis />
+      <Tooltip />
+      <Legend />
+
+      <Line
+        type="monotone"
+        dataKey="temperature"
+        name="Temperature (°C)"
+      />
+    </LineChart>
+  </ResponsiveContainer>
+</div>
+<div className="chart-section">
+  <h2>💡 Light Level History</h2>
+
+  <ResponsiveContainer width="100%" height={300}>
+    <LineChart data={historyData}>
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis dataKey="created_at" />
+      <YAxis />
+      <Tooltip />
+      <Legend />
+
+      <Line
+        type="monotone"
+        dataKey="light"
+        name="Light Level"
+      />
+    </LineChart>
+  </ResponsiveContainer>
+</div>
+<div className="chart-section">
+  <h2>🟢 Occupancy History</h2>
+
+  <ResponsiveContainer width="100%" height={300}>
+    <LineChart data={historyData}>
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis dataKey="created_at" />
+      <YAxis
+        domain={[0, 1]}
+        ticks={[0, 1]}
+        tickFormatter={(value) =>
+          value === 1 ? "Occupied" : "Empty"
+        }
+      />
+      <Tooltip
+        formatter={(value) =>
+          value === 1 ? "Occupied" : "Empty"
+        }
+      />
+      <Legend />
+
+      <Line
+        type="stepAfter"
+        dataKey="occupancy"
+        name="Occupancy"
+      />
+    </LineChart>
+  </ResponsiveContainer>
+</div>
+
+ <div className="history-section">
+  <h2>📊 Sensor History</h2>
   <div className="history-table">
     <table>
       <thead>
