@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import "./App.css"
 
 function App() {
   const [sensorData, setSensorData] = useState(null)
@@ -18,40 +19,75 @@ function App() {
     return <h1>Loading sensor data...</h1>
   }
 
-  return (
-    <div>
+return (
+  <div className="dashboard">
+
+    <div className="dashboard-header">
       <h1>Smart Room Occupancy Dashboard</h1>
+      <p>Real-time room monitoring and occupancy prediction</p>
+    </div>
 
-      <div>
-        <h2>Room Status</h2>
+    <div className="status-card">
+      <h2>Room Status</h2>
 
-        <p>
-          🟢 Occupancy:{" "}
-          {sensorData.occupancy === 1 ? "Occupied" : "Empty"}
-        </p>
+      <div
+        className={`status ${
+          sensorData.occupancy === 1 ? "occupied" : "empty"
+        }`}
+      >
+        {sensorData.occupancy === 1
+          ? "🟢 Occupied"
+          : "🔴 Empty"}
+      </div>
+    </div>
 
-        <p>🌡️ Temperature: {sensorData.temperature} °C</p>
+    <div className="cards">
 
-        <p>💧 Humidity: {sensorData.humidity} %</p>
+      <div className="card">
+        <div className="card-title">🌡️ Temperature</div>
+        <div className="card-value">
+          {sensorData.temperature} °C
+        </div>
+      </div>
 
-        <p>💡 Light Level: {sensorData.light}</p>
+      <div className="card">
+        <div className="card-title">💧 Humidity</div>
+        <div className="card-value">
+          {sensorData.humidity} %
+        </div>
+      </div>
 
-        <p>
-          🚶 Motion:{" "}
+      <div className="card">
+        <div className="card-title">💡 Light Level</div>
+        <div className="card-value">
+          {sensorData.light}
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-title">🚶 Motion</div>
+        <div className="card-value">
           {sensorData.pir_motion === 1
             ? "Detected"
             : "Not Detected"}
-        </p>
-
-        <p>
-          🎯 ML Confidence:{" "}
-          {sensorData.confidence * 100} %
-        </p>
-
-        <p>🕐 Last Updated: {sensorData.created_at}</p>
+        </div>
       </div>
+
+      <div className="card">
+        <div className="card-title">🎯 ML Confidence</div>
+        <div className="card-value">
+          {sensorData.confidence * 100} %
+        </div>
+      </div>
+
     </div>
-  )
+
+    <div className="last-updated">
+      🕐 Last Updated: {sensorData.created_at}
+    </div>
+
+  </div>
+)
 }
 
 export default App
