@@ -3,13 +3,15 @@ import "./App.css"
 
 function App() {
   const [sensorData, setSensorData] = useState(null)
+  const [historyData, setHistoryData] = useState([])
 
- useEffect(() => {
+useEffect(() => {
   const fetchSensorData = () => {
     fetch("http://127.0.0.1:8000/sensor-data")
       .then((response) => response.json())
       .then((data) => {
         setSensorData(data[0])
+        setHistoryData(data)
       })
       .catch((error) => {
         console.error("Error fetching sensor data:", error)
@@ -116,6 +118,45 @@ return (
     <div className="last-updated">
       🕐 Last Updated: {sensorData.created_at}
     </div>
+    <div className="history-section">
+  <h2>📊 Sensor History</h2>
+
+  <div className="history-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Temperature</th>
+          <th>Humidity</th>
+          <th>Light</th>
+          <th>Motion</th>
+          <th>Occupancy</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {historyData.map((record) => (
+          <tr key={record.id}>
+            <td>{record.created_at}</td>
+            <td>{record.temperature} °C</td>
+            <td>{record.humidity} %</td>
+            <td>{record.light}</td>
+            <td>
+              {record.pir_motion === 1
+                ? "Detected"
+                : "Not Detected"}
+            </td>
+            <td>
+              {record.occupancy === 1
+                ? "Occupied"
+                : "Empty"}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
 
   </div>
 )
