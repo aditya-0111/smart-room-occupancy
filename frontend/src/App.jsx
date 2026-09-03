@@ -26,6 +26,19 @@ function App() {
   if (!sensorData) {
     return <h1>Loading sensor data...</h1>
   }
+  let energyMode = ""
+let energyMessage = ""
+
+if (sensorData.occupancy === 1 && sensorData.pir_motion === 1) {
+  energyMode = "Normal Mode"
+  energyMessage = "Room occupied and motion detected"
+} else if (sensorData.occupancy === 1 && sensorData.pir_motion === 0) {
+  energyMode = "Monitoring Mode"
+  energyMessage = "Room occupied but no motion detected"
+} else {
+  energyMode = "Energy Saving Mode"
+  energyMessage = "Room appears empty"
+}
 
 return (
   <div className="dashboard">
@@ -47,6 +60,16 @@ return (
           ? "🟢 Occupied"
           : "🔴 Empty"}
       </div>
+    </div>
+
+     <div className="status-card">
+       <h2>⚡ Energy Management</h2>
+
+     <div className="status">
+       {energyMode}
+      </div>
+
+     <p>{energyMessage}</p>
     </div>
 
     <div className="cards">
