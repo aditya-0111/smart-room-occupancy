@@ -26,8 +26,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load trained Random Forest model
+# Load the updated Random Forest model
 model = joblib.load("../ml/occupancy_model.pkl")
+
+print("Updated Random Forest model loaded successfully!")
+print("Model features:", model.feature_names_in_)
 
 
 class SensorData(BaseModel):

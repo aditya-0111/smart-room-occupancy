@@ -56,8 +56,8 @@ return (
   <div className="dashboard">
 
     <div className="dashboard-header">
-      <h1>Smart Room Occupancy Dashboard</h1>
-      <p>Real-time room monitoring and occupancy prediction</p>
+      <h1>Real-Time Smart Room Occupancy Detection and Energy Management</h1>
+      <p>Real-time room monitoring and occupancy prediction dashboard</p>
     </div>
 
     <div className="status-card">
