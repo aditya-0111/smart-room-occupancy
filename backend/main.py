@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -5,6 +6,7 @@ import joblib
 import mysql.connector
 from dotenv import load_dotenv
 import os
+import pandas as pd
 
 load_dotenv()
 
@@ -18,6 +20,7 @@ db = mysql.connector.connect(
 print("MySQL connected successfully!")
 
 app = FastAPI(title="Smart Room Occupancy API")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
@@ -26,7 +29,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load the updated Random Forest model
 model = joblib.load("../ml/occupancy_model.pkl")
 
 print("Updated Random Forest model loaded successfully!")
@@ -47,59 +49,57 @@ def home():
 
 @app.post("/predict")
 def predict_occupancy(data: SensorData):
+    features = pd.DataFrame(
+        [[data.temperature, data.light, data.pir_motion]],
+        columns=["Temperature", "Light", "PIR_Motion"]
+    )
 
-    features = [[
-        data.temperature,
-        data.light,
-        data.pir_motion
-    ]]
-
-    prediction = model.predict(features)[0]
+    prediction = int(model.predict(features)[0])
     probability = model.predict_proba(features)[0]
 
     occupancy = "Occupied" if prediction == 1 else "Empty"
     confidence = float(probability[prediction])
 
-    # Save sensor data and prediction to MySQL
     cursor = db.cursor()
+    try:
+        query = """
+            INSERT INTO sensor_data
+            (temperature, humidity, light, pir_motion, occupancy, confidence)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """
 
-    query = """
-        INSERT INTO sensor_data
-        (temperature, humidity, light, pir_motion, occupancy, confidence)
-        VALUES (%s, %s, %s, %s, %s, %s)
-    """
+        values = (
+            data.temperature,
+            data.humidity,
+            data.light,
+            data.pir_motion,
+            prediction,
+            confidence
+        )
 
-    values = (
-        data.temperature,
-        data.humidity,
-        data.light,
-        data.pir_motion,
-        int(prediction),
-        confidence
-    )
-
-    cursor.execute(query, values)
-    db.commit()
-    cursor.close()
+        cursor.execute(query, values)
+        db.commit()
+    finally:
+        cursor.close()
 
     return {
         "occupancy": occupancy,
-        "prediction": int(prediction),
+        "prediction": prediction,
         "confidence": confidence
     }
+
+
 @app.get("/sensor-data")
 def get_sensor_data():
-
     cursor = db.cursor(dictionary=True)
-
-    query = """
-        SELECT *
-        FROM sensor_data
-        ORDER BY created_at DESC
-    """
-
-    cursor.execute(query)
-    data = cursor.fetchall()
-    cursor.close()
-
-    return data
+    try:
+        query = """
+            SELECT *
+            FROM sensor_data
+            ORDER BY created_at DESC
+        """
+        cursor.execute(query)
+        data = cursor.fetchall()
+        return data
+    finally:
+        cursor.close()
