@@ -1,126 +1,95 @@
-Smart Room Occupancy Detection and Energy Management
+# Real-Time Smart Room Occupancy Detection and Energy Management Using Machine Learning
 
-An IoT and Machine Learning Project
+An IoT and machine learning project that uses ESP32-based sensors, a Random Forest classifier, FastAPI, MySQL, and a React dashboard to estimate room occupancy and monitor environmental conditions in real time.
 
-A real-time room monitoring system that combines ESP32 sensors, a Random Forest classifier, FastAPI, MySQL, and a React dashboard to estimate room occupancy and monitor environmental conditions.
+## Overview
 
-Overview
+This project combines IoT hardware and machine learning to estimate whether a room is occupied based on temperature, light, and motion sensor readings.
 
-The system collects temperature, light, and motion readings from an ESP32. A FastAPI backend processes the sensor data, estimates occupancy using a trained Random Forest model, stores readings in MySQL, and provides data to a web dashboard.
+The ESP32 collects sensor data and sends it to a FastAPI backend. The backend processes the readings, estimates occupancy using a trained Random Forest model, stores the results in MySQL, and provides data to a React dashboard.
 
-A 10-second no-motion timeout is implemented to mark the room as unoccupied when motion is no longer detected within the configured period.
+The system also implements a 10-second no-motion timeout. If motion is not detected for the configured period, the backend marks the room as unoccupied.
 
-Key Features
+## Key Features
 
-Real-time monitoring: Collects temperature, light, and PIR motion readings.
+- Real-time sensor monitoring: Collects temperature, light, and PIR motion readings through ESP32.
+- Machine learning-based prediction: Uses a trained Random Forest classifier to estimate room occupancy.
+- Automated occupancy timeout: Marks the room unoccupied after 10 seconds without detected motion.
+- REST API: Provides FastAPI endpoints for health checks, occupancy prediction, and sensor data retrieval.
+- Database integration: Stores sensor readings and occupancy results in MySQL.
+- Web dashboard: Displays sensor readings and occupancy information through a React interface.
+- Energy management status: Supports occupancy-based monitoring through software logic.
 
-ML-based occupancy estimation: Uses a trained Random Forest classifier.
+## System Architecture
 
-Occupancy timeout: Marks the room unoccupied after 10 seconds without detected motion.
+```text
+       Temperature Sensor (DHT22)
+       Light Sensor (LDR - Digital)
+       PIR Motion Sensor
+                 |
+                 v
+               ESP32
+                 |
+                 | HTTP POST
+                 v
+          FastAPI Backend
+                 |
+          +------+------+
+          |             |
+          v             v
+   Random Forest      MySQL
+       Model         Database
+          |
+          v
+   Occupancy Estimate
+          |
+          v
+    React Dashboard
+```
 
-REST API: Provides health-check, prediction, and sensor-data endpoints.
+## Technology Stack
 
-MySQL integration: Stores sensor readings and occupancy results.
+| Component                       | Technology                     |
+| ------------------------------- | ------------------------------ |
+| Microcontroller                 | ESP32                          |
+| Temperature and humidity sensor | DHT22                          |
+| Light sensor                    | LDR module with digital output |
+| Motion sensor                   | PIR                            |
+| Programming languages           | Python, C++                    |
+| Machine learning                | Scikit-learn                   |
+| ML algorithm                    | Random Forest Classifier       |
+| Backend framework               | FastAPI                        |
+| API server                      | Uvicorn                        |
+| Database                        | MySQL                          |
+| Frontend                        | React                          |
+| Frontend tooling                | Vite                           |
+| Embedded development            | Arduino IDE                    |
+| Version control                 | Git and GitHub                 |
 
-Web dashboard: Displays sensor information and occupancy status.
+## Hardware Requirements
 
-Energy-management status: Supports occupancy-based monitoring through software logic.
+- ESP32 development board
+- DHT22 temperature and humidity sensor
+- LDR light sensor module with digital output
+- PIR motion sensor
+- Breadboard and jumper wires
+- USB cable and computer
+- Wi-Fi network
 
-System Architecture
+Note: Humidity is monitored and stored but is not currently used as an input to the machine learning model. The current implementation does not physically switch lights, fans, or other appliances.
 
-DHT22 + LDR + PIR Sensors
-           |
-           v
-          ESP32
-           |
-           | HTTP POST
-           v
-     FastAPI Backend
-           |
-           +------> Random Forest Model
-           |                 |
-           |                 v
-           |          Occupancy Estimate
-           |
-           +------> MySQL Database
-           |
-           v
-     React Dashboard
+## Software Requirements
 
-Technology Stack
+- Python and pip
+- Node.js and npm
+- MySQL Server
+- Arduino IDE
+- Git
+- A modern web browser
 
-Layer
+## Project Structure
 
-Technology
-
-Microcontroller
-
-ESP32
-
-Temperature and humidity
-
-DHT22
-
-Light detection
-
-LDR digital-output module
-
-Motion detection
-
-PIR sensor
-
-Programming
-
-Python, C++
-
-Machine learning
-
-Scikit-learn
-
-ML algorithm
-
-Random Forest Classifier
-
-Backend
-
-FastAPI, Uvicorn
-
-Database
-
-MySQL
-
-Frontend
-
-React, Vite
-
-Embedded development
-
-Arduino IDE
-
-Version control
-
-Git, GitHub
-
-Hardware Requirements
-
-ESP32 development board
-
-DHT22 temperature and humidity sensor
-
-LDR module with digital output
-
-PIR motion sensor
-
-Breadboard and jumper wires
-
-USB cable and computer
-
-Wi-Fi network
-
-Note: Humidity is monitored but is not currently used as an ML input. The project does not currently implement physical appliance switching.
-
-Project Structure
-
+```text
 smart-room-occupancy/
 ├── backend/
 │   ├── main.py
@@ -142,294 +111,256 @@ smart-room-occupancy/
 │   └── occupancy_model.pkl
 ├── .gitignore
 └── README.md
+```
 
-This shows the main project files; additional files may exist in individual folders.
+This tree shows the main project files. Additional files may exist within individual directories.
 
-Machine Learning
+## Machine Learning Model
 
-The model uses the Room Occupancy Estimation dataset.
+### Dataset
 
-Original dataset: 10,129 observations
+The project uses the Room Occupancy Estimation dataset.
 
-Target: Occupied
+- Original dataset: 10,129 observations
+- Target variable: `Occupied`
+- Target definition: Occupied when `Room_Occupancy_Count > 0`
+- Input features: `Temperature`, `Light`, `PIR_Motion`
 
-Target definition: Occupied when Room_Occupancy_Count > 0
+Humidity is excluded from the current model inputs.
 
-Input features: Temperature, Light, PIR_Motion
+### Data Preprocessing
 
-Algorithm: Random Forest Classifier
+The selected features are prepared for the Random Forest classifier. The light feature is converted to a binary value during preprocessing to align its representation with the ESP32's digital-output LDR module.
 
-Number of estimators: 100
+The dataset's original light measurements and the hardware's digital output may not have identical physical meanings. This is a limitation of the current implementation.
 
-Random state: 42
+### Model Configuration
 
-The light feature is converted to a binary value during preprocessing to align its representation with the digital-output LDR module. The sensor's digital output and the original dataset's light measurements may not have identical physical meanings.
+| Parameter                           | Value                    |
+| ----------------------------------- | ------------------------ |
+| Algorithm                           | Random Forest Classifier |
+| Number of estimators                | 100                      |
+| Random state                        | 42                       |
+| Test samples in reported evaluation | 2,026                    |
 
-Evaluation Results
+### Model Evaluation Results
 
-The following results are from the current notebook evaluation on 2,026 test samples.
+The following results are from the current notebook evaluation on the held-out test set.
 
-Metric
-
-Unoccupied (0)
-
-Occupied (1)
-
-Precision
-
-0.98
-
-0.93
-
-Recall
-
-0.98
-
-0.90
-
-F1-score
-
-0.98
-
-0.91
-
-Support
-
-1,646
-
-380
+| Metric    | Unoccupied (Class 0) | Occupied (Class 1) |
+| --------- | -------------------: | -----------------: |
+| Precision |                 0.98 |               0.93 |
+| Recall    |                 0.98 |               0.90 |
+| F1-score  |                 0.98 |               0.91 |
+| Support   |                1,646 |                380 |
 
 Overall accuracy: 96.79%
 
-Confusion matrix:
+### Confusion Matrix
 
-Actual / Predicted
+| Actual / Predicted | Unoccupied (0) | Occupied (1) |
+| ------------------ | -------------: | -----------: |
+| Unoccupied (0)     |          1,619 |           27 |
+| Occupied (1)       |             38 |          342 |
 
-Unoccupied (0)
+These metrics describe performance on the notebook's held-out dataset. Actual performance with live sensor readings may differ.
 
-Occupied (1)
+## Installation and Setup
 
-Unoccupied (0)
+### 1. Clone the Repository
 
-1,619
-
-27
-
-Occupied (1)
-
-38
-
-342
-
-These results describe the notebook's held-out test set. Live sensor performance may differ.
-
-Backend Setup
-
-1. Clone the repository
-
+```bash
 git clone https://github.com/aditya-0111/smart-room-occupancy.git
 cd smart-room-occupancy
+```
 
-2. Create a Python virtual environment
+### 2. Create a Python Virtual Environment
 
 On Windows PowerShell:
 
+```powershell
 python -m venv venv
 .\venv\Scripts\Activate.ps1
+```
 
-3. Install dependencies
+If PowerShell blocks activation, you can use the following command for the current terminal session:
 
-If backend/requirements.txt exists:
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+```
 
+Then activate the environment again.
+
+### 3. Install Backend Dependencies
+
+If the project contains `backend/requirements.txt`, run:
+
+```powershell
 pip install -r backend/requirements.txt
+```
 
-Otherwise, install the dependencies required by your backend imports and model-loading code.
+If that file does not exist, install the packages required by the current backend imports and model-loading code. Do not assume a dependency file exists if it has not been created.
 
-4. Configure MySQL
+### 4. Configure MySQL
 
-Create the database:
+Start MySQL Server and create the project database:
 
+```sql
 CREATE DATABASE smart_room;
+```
 
-Configure your MySQL connection using the environment-variable names expected by backend/main.py. Keep credentials in a local .env file and out of GitHub.
+Configure the database connection using the environment-variable names expected by `backend/main.py`.
 
-5. Start the backend
+Keep database credentials in a local `.env` file. Do not commit real passwords, secrets, or Wi-Fi credentials to GitHub.
 
+### 5. Start the Backend
+
+From the project root, activate the virtual environment and run:
+
+```powershell
 cd backend
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
 
-API health check: http://127.0.0.1:8000/
+The backend should be accessible at:
 
-Interactive API documentation: http://127.0.0.1:8000/docs
+- Health check: `http://127.0.0.1:8000/`
+- Interactive API documentation: `http://127.0.0.1:8000/docs`
 
-Frontend Setup
+### 6. Start the Frontend
 
 Open another terminal from the project root:
 
+```powershell
 cd frontend
 npm install
 npm run dev
+```
 
-Open the local URL shown by Vite, usually http://localhost:5173/.
+Open the local URL printed by Vite, typically:
 
-Ensure the frontend API base URL points to the correct backend address.
+`http://localhost:5173/`
 
-ESP32 Setup
+Ensure that the frontend API configuration points to the correct backend address.
 
-Open esp32/smart_room_sensors/smart_room_sensors.ino in Arduino IDE.
+## ESP32 Configuration
 
-Install the required ESP32 board support and sensor libraries.
+1. Open `esp32/smart_room_sensors/smart_room_sensors.ino` in Arduino IDE.
+2. Install the required ESP32 board support and sensor libraries.
+3. Configure your Wi-Fi credentials locally.
+4. Set the backend URL to your computer's reachable LAN IP address.
+5. Ensure that the ESP32 and computer can communicate over the network.
+6. Select the correct board and serial port.
+7. Upload the sketch and check the Serial Monitor for sensor readings and HTTP responses.
 
-Configure your local Wi-Fi credentials.
+Do not use `localhost` as the backend address in ESP32 firmware. The ESP32 needs the computer's reachable LAN IP address.
 
-Set the backend URL to your computer's reachable LAN IP address.
+### Sensor Pin Connections
 
-Connect the ESP32 and computer to a network that allows communication between them.
+| Component          | ESP32 GPIO |
+| ------------------ | ---------: |
+| DHT22 data         |     GPIO 4 |
+| PIR motion output  |    GPIO 18 |
+| LDR digital output |    GPIO 19 |
 
-Select the correct board and serial port, then upload the sketch.
+Check the voltage and wiring requirements of your specific sensor modules before connecting them.
 
-Check the Serial Monitor for sensor readings and HTTP responses.
+## API Documentation
 
-Sensor Connections
+The current backend exposes the following endpoints.
 
-Component
+| Method | Endpoint       | Purpose                                                        |
+| ------ | -------------- | -------------------------------------------------------------- |
+| `GET`  | `/`            | Check backend availability                                     |
+| `POST` | `/predict`     | Process sensor readings, estimate occupancy, and store results |
+| `GET`  | `/sensor-data` | Retrieve stored sensor readings                                |
 
-ESP32 GPIO
+### Example Prediction Request
 
-DHT22 data
-
-GPIO 4
-
-PIR output
-
-GPIO 18
-
-LDR digital output
-
-GPIO 19
-
-Check your sensor modules' voltage and wiring requirements before connecting them.
-
-API Endpoints
-
-Method
-
-Endpoint
-
-Purpose
-
-GET
-
-/
-
-Backend health check
-
-POST
-
-/predict
-
-Process readings, estimate occupancy, and store results
-
-GET
-
-/sensor-data
-
-Retrieve stored sensor readings
-
-Example Request
-
+```json
 {
   "temperature": 26.5,
   "humidity": 55.0,
   "light": 1,
   "pir_motion": 1
 }
+```
 
-The request fields must match the active backend implementation.
+The exact field names and data types must match the active backend implementation.
 
-Example Response
+### Example Prediction Response
 
+```json
 {
   "occupancy": "Occupied",
   "prediction": 1,
   "model_prediction": 1,
   "confidence": 0.95
 }
+```
 
-The response is illustrative; actual predictions and confidence values depend on the sensor readings and backend logic.
+This is an illustrative response. The actual occupancy result and confidence value depend on the incoming readings and backend logic.
 
-Occupancy Logic
+## Occupancy Detection Logic
 
-The ESP32 collects sensor readings.
+The current system follows this process:
 
-Readings are sent to the FastAPI backend.
+1. The ESP32 collects temperature, light, humidity, and motion readings.
+2. The ESP32 sends the readings to the FastAPI backend.
+3. The Random Forest model estimates occupancy using temperature, light, and PIR motion.
+4. When PIR motion is detected, the backend updates the last-motion timestamp and marks the room occupied.
+5. If no motion is detected for 10 seconds, the backend marks the room unoccupied.
+6. Sensor readings and the final occupancy state are stored in MySQL.
+7. The React dashboard retrieves and displays the latest data.
 
-The Random Forest model estimates occupancy.
+Important limitation: A PIR sensor may not detect someone who remains still. Therefore, the timeout-based occupancy status is an estimate and may not always reflect actual room presence. The in-memory motion timer also resets if the backend restarts.
 
-Detected PIR motion updates the last-motion timestamp and marks the room occupied.
+## Energy Management
 
-If no motion is detected for 10 seconds, the backend marks the room unoccupied.
+The project supports occupancy-based energy-status monitoring through software logic and the dashboard.
 
-Readings and the final occupancy state are stored in MySQL.
+The current implementation does not physically switch lights, fans, or other electrical appliances. Physical control would require additional hardware and appropriate electrical safety measures.
 
-The dashboard retrieves and displays the data.
+## Testing and Verification
 
-Limitation: A PIR sensor may not detect someone who remains still. The timeout-based status is an estimate, not a guarantee of actual room occupancy.
+The following checks can be used to verify the system:
 
-Energy Management
+- [ ] ESP32 reads the connected sensors correctly.
+- [ ] Sensor readings reach the FastAPI backend.
+- [ ] The `/predict` endpoint returns an occupancy result.
+- [ ] MySQL stores sensor readings and occupancy results.
+- [ ] The `/sensor-data` endpoint returns stored records.
+- [ ] The dashboard displays sensor readings and occupancy status.
+- [ ] The 10-second no-motion timeout behaves as expected.
+- [ ] The ML evaluation results are available in the notebook.
 
-The system supports occupancy-based energy-status monitoring in software. Physical switching of lights, fans, or other appliances is not currently implemented.
+## Limitations
 
-Verification Checklist
+- Live prediction performance may differ from offline test results.
+- PIR sensors may miss stationary occupants.
+- The dataset's light measurements may differ from the LDR module's digital output.
+- Humidity is monitored but is not an input to the current ML model.
+- Energy management is currently software-level; physical appliance switching is not implemented.
+- The motion timer is stored in backend memory and resets when the server restarts.
+- Multi-room occupancy state is not implemented in the current configuration.
 
-ESP32 reads the connected sensors.
+## Future Enhancements
 
-Sensor readings reach the FastAPI backend.
+- Add safe, hardware-based appliance control.
+- Improve occupancy estimation using additional suitable sensor inputs.
+- Add historical graphs and energy-consumption analytics.
+- Support multiple rooms with independent occupancy states.
+- Add configurable occupancy timeouts.
+- Improve deployment security and monitoring.
 
-The prediction endpoint returns an occupancy result.
-
-MySQL stores sensor readings and occupancy results.
-
-The sensor-data endpoint returns stored records.
-
-The dashboard displays updated readings and occupancy status.
-
-The 10-second timeout behaves as expected.
-
-Limitations
-
-Live prediction performance may differ from offline test results.
-
-PIR sensors may miss stationary occupants.
-
-Binary LDR values may not be semantically equivalent to the original dataset's light measurements.
-
-Humidity is monitored but is not used by the current ML model.
-
-Energy management is software-level; physical appliance control is not implemented.
-
-The current motion timer is held in backend memory and resets when the server restarts.
-
-Future Improvements
-
-Add safe, hardware-based appliance control.
-
-Improve occupancy detection using additional sensor inputs.
-
-Add historical visualizations and energy-consumption analytics.
-
-Support multiple rooms with independent occupancy states.
-
-Add configurable timeouts and deployment security improvements.
-
-Author
+## Author
 
 Aditya Kumar
 
-B.Tech, Electronics and Communication Engineering
+B.Tech — Electronics and Communication Engineering
 
-GitHub: aditya-0111
+GitHub: [aditya-0111](https://github.com/aditya-0111)
 
-License
+## License
 
-No license has been specified. Add an open-source license if you intend to permit reuse or redistribution.
+No license has been specified for this project yet. Add an appropriate open-source license if you intend to permit others to reuse or redistribute the code.
